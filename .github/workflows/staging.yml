@@ -1,0 +1,34 @@
+name: Deploy to Staging
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - closed
+
+jobs:
+  deploy:
+    if: github.event.pull_request.merged == true
+
+    runs-on: ubuntu-latest
+    environment: staging
+
+    steps:
+    - name: Deploy to Staging EC2
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.STAGING_HOST }}
+        username: ubuntu
+        key: ${{ secrets.STAGING_SSH_KEY }}
+        script: |
+          cd Multi-Environment-CI-CD-Pipeline-with-Cost-Monitoring/
+
+          git pull origin main
+
+          docker stop cicd-container || true
+          docker rm cicd-container || true
+
+          docker build -t cicd-app .
+
+          docker run -d -p 80:3000 --name cicd-container cicd-app
