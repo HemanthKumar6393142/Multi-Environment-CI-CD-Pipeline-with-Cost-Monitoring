@@ -11,9 +11,6 @@ jobs:
     environment: dev
 
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v3
-
     - name: Deploy to EC2
       uses: appleboy/ssh-action@master
       with:
@@ -21,9 +18,9 @@ jobs:
         username: ubuntu
         key: ${{ secrets.DEV_SSH_KEY }}
         script: |
-          cd project
+          cd Multi-Environment-CI-CD-Pipeline-with-Cost-Monitoring/
 
-          git pull
+          git pull origin dev
 
           docker stop cicd-container || true
           docker rm cicd-container || true
