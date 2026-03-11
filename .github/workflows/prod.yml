@@ -1,0 +1,30 @@
+name: Deploy to Production
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: prod
+
+    steps:
+    - name: Deploy to Production EC2
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.PROD_HOST }}
+        username: ubuntu
+        key: ${{ secrets.PROD_SSH_KEY }}
+        script: |
+          cd Multi-Environment-CI-CD-Pipeline-with-Cost-Monitoring
+
+          git pull origin main
+
+          docker stop cicd-container || true
+          docker rm cicd-container || true
+
+          docker build -t cicd-app .
+
+          docker run -d -p 80:3000 --name cicd-container cicd-app
